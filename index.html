@@ -10,60 +10,82 @@
       margin: 0;
       padding: 0;
       line-height: 1.6;
-      background: #f4f4f9;
-      color: #333;
+      background: #0d0d0d; /* 夜空底色 */
+      color: #f0f0f0;
+      overflow-x: hidden;
     }
     header {
-      background: #2c3e50;
-      color: white;
       text-align: center;
       padding: 2rem 0;
+      position: relative;
+      z-index: 1;
     }
     header h1 {
       margin: 0;
-      font-size: 2.5rem;
+      font-size: 2.8rem;
+      color: #ffd700; /* 金黃色 */
+      text-shadow: 0 0 10px #ff8c00, 0 0 20px #ff4500;
     }
     header p {
       margin-top: 0.5rem;
       font-size: 1.2rem;
+      color: #ccc;
     }
     section {
       max-width: 800px;
       margin: 2rem auto;
       padding: 1rem;
+      position: relative;
+      z-index: 1;
     }
     h2 {
-      color: #2c3e50;
-      border-bottom: 2px solid #ddd;
+      color: #ffdd55;
+      border-bottom: 2px solid #444;
       padding-bottom: 0.3rem;
+      text-shadow: 0 0 5px #ff6600;
     }
     .card {
-      background: white;
+      background: rgba(20, 20, 20, 0.85);
       margin: 1rem 0;
       padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
     footer {
       text-align: center;
       padding: 1rem;
-      background: #2c3e50;
-      color: white;
+      background: rgba(0,0,0,0.85);
+      color: #aaa;
       margin-top: 2rem;
+      position: relative;
+      z-index: 1;
     }
     a {
-      color: #3498db;
+      color: #66ccff;
       text-decoration: none;
     }
     a:hover {
       text-decoration: underline;
     }
+    /* 煙火 Canvas */
+    #fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: #0d0d0d;
+    }
   </style>
 </head>
 <body>
+  <!-- 煙火背景 -->
+  <canvas id="fireworks"></canvas>
+
   <header>
-    <h1>嗨，我是 XXX 👋</h1>
-    <p>歡迎來到我的個人網站</p>
+    <h1>嗨，我是 XXX 🎆</h1>
+    <p>歡迎來到我的祭典風格個人網站</p>
   </header>
 
   <section>
@@ -95,7 +117,87 @@
   </section>
 
   <footer>
-    <p>© 2025 我的個人網站 | Powered by GitHub Pages</p>
+    <p>© 2025 我的個人網站 | 🎇 祭典夜空下的煙火</p>
   </footer>
+
+  <!-- 煙火效果 JS -->
+  <script>
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let fireworks = [];
+
+    class Firework {
+      constructor(x, y, radius, color, speedX, speedY) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.speedX = speedX;
+        this.speedY = speedY;
+        this.alpha = 1;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= 0.01;
+      }
+      draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function randomColor() {
+      const colors = ["#ff4d4d", "#ffcc00", "#66ff66", "#66ccff", "#ff99ff", "#ffffff"];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function createFirework(x, y) {
+      for (let i = 0; i < 50; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        fireworks.push(
+          new Firework(
+            x, y, 2, randomColor(),
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed
+          )
+        );
+      }
+    }
+
+    function animate() {
+      ctx.fillStyle = "rgba(13, 13, 13, 0.2)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      fireworks.forEach((f, i) => {
+        f.update();
+        f.draw();
+        if (f.alpha <= 0) fireworks.splice(i, 1);
+      });
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("click", (e) => {
+      createFirework(e.clientX, e.clientY);
+    });
+
+    setInterval(() => {
+      createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.7);
+    }, 2000);
+
+    animate();
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
 </body>
 </html>
