@@ -67,8 +67,8 @@
     a:hover {
       text-decoration: underline;
     }
-    /* 煙火 Canvas */
-    #fireworks {
+    /* 背景 Canvas */
+    #nightSky {
       position: fixed;
       top: 0;
       left: 0;
@@ -80,11 +80,11 @@
   </style>
 </head>
 <body>
-  <!-- 煙火背景 -->
-  <canvas id="fireworks"></canvas>
+  <!-- 夜空背景 -->
+  <canvas id="nightSky"></canvas>
 
   <header>
-    <h1>ようこそ！，我是 黃章信 </h1>
+    <h1>ようこそ！，我是 朝露 </h1> 
     <p>宅宅+科技迷+動手族的究極客家人，Handsoff是夢想的打工處</p>
   </header>
 
@@ -105,101 +105,132 @@
 
     <h2>作品集</h2>
     <div class="card">
-      <p><a href="https://github.com/S0132159" target="_blank">Project-Lycoris-Personalized-ChatAI
-(Private)</a></p>
-      
+      <p><a href="https://github.com/S0132159" target="_blank">Project-Lycoris-Personalized-ChatAI (Private)</a></p>
     </div>
 
     <h2>聯絡方式</h2>
     <div class="card">
-      <p>Email:d04gk6vul40309@gmail.com </p>
+      <p>Email: d04gk6vul40309@gmail.com </p>
       <p>GitHub: <a href="https://github.com/S0132159" target="_blank">github</a></p>
     </div>
   </section>
 
   <footer>
-    <p>© 2025 AcesDeny | Matsurinohanabi 0.2</p>
+    <p>© 2025 AcesDeny | Matsurinohanabi 0.3</p>
   </footer>
 
-  <!-- 煙火效果 JS -->
+  <!-- 夜空+流星 JS -->
   <script>
-    const canvas = document.getElementById("fireworks");
+    const canvas = document.getElementById("nightSky");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let fireworks = [];
+    let stars = [];
+    let meteors = [];
 
-    class Firework {
-      constructor(x, y, radius, color, speedX, speedY) {
+    // 星星物件
+    class Star {
+      constructor(x, y, radius, alpha) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.color = color;
-        this.speedX = speedX;
-        this.speedY = speedY;
-        this.alpha = 1;
-      }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.alpha -= 0.01;
+        this.alpha = alpha;
+        this.twinkle = Math.random() * 0.05 + 0.01;
       }
       draw() {
         ctx.globalAlpha = this.alpha;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = "white";
         ctx.fill();
         ctx.globalAlpha = 1;
       }
+      update() {
+        this.alpha += this.twinkle * (Math.random() > 0.5 ? 1 : -1);
+        if (this.alpha < 0.2) this.alpha = 0.2;
+        if (this.alpha > 1) this.alpha = 1;
+        this.draw();
+      }
     }
 
-    function randomColor() {
-      const colors = ["#ff4d4d", "#ffcc00", "#66ff66", "#66ccff", "#ff99ff", "#ffffff"];
-      return colors[Math.floor(Math.random() * colors.length)];
+    // 流星物件
+    class Meteor {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height * 0.3; // 天空上方
+        this.length = Math.random() * 80 + 50;
+        this.speed = Math.random() * 8 + 5;
+        this.angle = Math.PI / 4; // 45度斜向
+        this.opacity = 1;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(
+          this.x - this.length * Math.cos(this.angle),
+          this.y - this.length * Math.sin(this.angle)
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
+      update() {
+        this.x += this.speed * Math.cos(this.angle);
+        this.y += this.speed * Math.sin(this.angle);
+        this.opacity -= 0.01;
+        this.draw();
+      }
     }
 
-    function createFirework(x, y) {
-      for (let i = 0; i < 50; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 5 + 2;
-        fireworks.push(
-          new Firework(
-            x, y, 2, randomColor(),
-            Math.cos(angle) * speed,
-            Math.sin(angle) * speed
+    // 產生星星
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 200; i++) {
+        stars.push(
+          new Star(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            Math.random() * 2,
+            Math.random()
           )
         );
       }
     }
 
+    // 主動畫
     function animate() {
-      ctx.fillStyle = "rgba(13, 13, 13, 0.2)";
+      ctx.fillStyle = "rgba(13, 13, 13, 0.8)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      fireworks.forEach((f, i) => {
-        f.update();
-        f.draw();
-        if (f.alpha <= 0) fireworks.splice(i, 1);
+
+      stars.forEach(star => star.update());
+
+      meteors.forEach((meteor, i) => {
+        meteor.update();
+        if (meteor.opacity <= 0) meteors.splice(i, 1);
       });
+
       requestAnimationFrame(animate);
     }
 
-    canvas.addEventListener("click", (e) => {
-      createFirework(e.clientX, e.clientY);
-    });
-
+    // 隨機生成流星
     setInterval(() => {
-      createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.7);
-    }, 2000);
+      if (Math.random() < 0.3) { // 機率調整：0.3 => 平均3秒有1顆
+        meteors.push(new Meteor());
+      }
+    }, 1000);
 
+    initStars();
     animate();
 
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      initStars();
     });
   </script>
 </body>
 </html>
-
